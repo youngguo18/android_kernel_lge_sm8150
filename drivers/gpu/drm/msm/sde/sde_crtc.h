@@ -345,6 +345,12 @@ struct sde_crtc_res {
 	u32 flags;
 };
 
+#ifdef CONFIG_DRM_SDE_EXPO
+enum sde_crtc_dirty_flags {
+	SDE_CRTC_DIRTY_DIM_LAYER_EXPO,
+};
+#endif
+
 /**
  * sde_crtc_respool - crtc resource pool
  * @rp_lock: pointer to serialization lock
@@ -437,6 +443,9 @@ struct sde_crtc_state {
 	u32 padding_dummy;
 
 	struct sde_crtc_respool rp;
+#ifdef CONFIG_DRM_SDE_EXPO
+	struct sde_hw_dim_layer *exposure_dim_layer;
+#endif
 };
 
 enum sde_crtc_irq_state {
