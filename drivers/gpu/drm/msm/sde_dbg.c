@@ -5131,12 +5131,6 @@ int sde_dbg_debugfs_register(struct device *dev)
 
 	return 0;
 }
-#else
-int sde_dbg_debugfs_register(struct device *dev)
-{
-	return 0;
-}
-#endif
 
 #else
 

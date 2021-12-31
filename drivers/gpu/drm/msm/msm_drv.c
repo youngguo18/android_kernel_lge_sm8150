@@ -60,6 +60,8 @@
 #define MSM_VERSION_MINOR	2
 #define MSM_VERSION_PATCHLEVEL	0
 
+static DEFINE_MUTEX(msm_release_lock);
+
 #if IS_ENABLED(CONFIG_LGE_DISPLAY_COMMON)
 extern char* get_ddic_name(void);
 #endif
