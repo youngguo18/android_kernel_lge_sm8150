@@ -407,6 +407,8 @@ static inline bool ufshcd_is_valid_pm_lvl(int lvl)
 
 static struct ufs_dev_fix ufs_fixups[] = {
 	/* UFS cards deviations table */
+	UFS_FIX(UFS_VENDOR_MICRON, UFS_ANY_MODEL,
+		UFS_DEVICE_QUIRK_DELAY_BEFORE_LPM),
 #ifdef CONFIG_MACH_LGE
 	/* Toshiba recommend that we should not use FASTAUTO in Toshiba-UFS-Gen3.
 	 */
