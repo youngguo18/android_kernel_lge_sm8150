@@ -1721,13 +1721,12 @@ ffs_fs_mount(struct file_system_type *t, int flags,
 	data.ffs_data = ffs;
 
 	rv = mount_nodev(t, flags, &data, ffs_sb_fill);
-	if (IS_ERR(rv) && data.ffs_data) {
-		ffs_release_dev(data.ffs_data);
+	if (IS_ERR(rv) && data.ffs_data)
 		ffs_data_put(data.ffs_data);
 	return rv;
 }
 
-static void
+static void 
 ffs_fs_kill_sb(struct super_block *sb)
 {
 	ENTER();
