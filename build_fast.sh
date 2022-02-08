@@ -14,7 +14,7 @@ export CROSS_COMPILE_ARM32=arm-linux-gnueabi-
 echo
 echo "Set DEFCONFIG"
 echo 
-make CC=clang AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip O=out vendor/dragon_alpha_defconfig
+make CC=clang AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip O=out vendor/dragon_flash_defconfig
 
 echo
 echo "Build The Good Stuff"
