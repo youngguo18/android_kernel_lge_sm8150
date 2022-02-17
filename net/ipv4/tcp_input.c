@@ -103,6 +103,7 @@ int sysctl_tcp_invalid_ratelimit __read_mostly = HZ/2;
 
 #ifdef CONFIG_LGP_DATA_TCPIP_MPTCP
 // don't need below preprocessors
+#define FLAG_ACK_MAYBE_DELAYED	0x10000 /* Likely a delayed ACK */
 #else
 #define FLAG_DATA		0x01 /* Incoming frame contained data.		*/
 #define FLAG_WIN_UPDATE		0x02 /* Incoming ACK was a window update.	*/
