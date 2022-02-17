@@ -79,7 +79,7 @@ config IOSCHED_ZEN
 
 config IOSCHED_TRIPNDROID
 	tristate "TripNDroid IO Scheduler"
-	default n
+	default y
 	---help---
 	  The TripNDroid IO Scheduler is based on noop, deadline and vr
 	  it uses deadlines to ensure some fairness. The scheduler is build
