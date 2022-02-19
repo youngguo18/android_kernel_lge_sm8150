@@ -84,6 +84,10 @@ static const struct of_device_id dsi_display_dt_match[] = {
 
 #if IS_ENABLED(CONFIG_LGE_DISPLAY_COMMON)
 struct dsi_display *primary_display;
+struct dsi_display *dsi_display_get_main_display(void)
+{
+	return primary_display;
+}
 
 extern int lge_dsi_panel_drv_post_init(struct dsi_panel *panel);
 extern struct lge_blmap* lge_get_blmap(struct dsi_panel *panel, enum lge_blmap_type type);
