@@ -19,6 +19,11 @@
 #include "sde_crtc.h"
 #include "sde_expo_dim_layer.h"
 
+#include <linux/module.h>
+
+int dc_enabled = 1;
+module_param(dc_enabled, int, 0644);
+
 static int interpolate(int x, int xa, int xb, int ya, int yb)
 {
 	int bf, factor, plus;
@@ -87,7 +92,7 @@ uint32_t expo_map_dim_level(uint32_t level, struct dsi_display *display)
 	uint32_t override_level, brightness;
 	uint8_t dim_brightness;
 
-	if (level < DIM_THRES_LEVEL) {
+	if (level < DIM_THRES_LEVEL && dc_enabled) {
 		override_level = DIM_THRES_LEVEL;
 	} else {
 		override_level = level;
