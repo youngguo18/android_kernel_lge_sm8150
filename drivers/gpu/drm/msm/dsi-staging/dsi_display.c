@@ -106,6 +106,10 @@ extern int dsi_display_set_backlight_cover(struct dsi_display *dsi_display, u32 
 
 #endif
 
+#ifdef CONFIG_DRM_SDE_EXPO
+extern int dc_enabled;
+#endif
+
 static void dsi_display_mask_ctrl_error_interrupts(struct dsi_display *display,
 			u32 mask, bool enable)
 {
@@ -278,7 +282,9 @@ int dsi_display_set_backlight(struct drm_connector *connector,
 	}
 
 #ifdef CONFIG_DRM_SDE_EXPO
-	bl_temp = expo_map_dim_level((u32)bl_temp, dsi_display);
+	if (dc_enabled) {
+		bl_temp = expo_map_dim_level((u32)bl_temp, dsi_display);
+	}
 #endif
 
 	rc = dsi_panel_set_backlight(panel, (u32)bl_temp);
