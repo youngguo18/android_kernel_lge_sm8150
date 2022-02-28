@@ -21,9 +21,6 @@
 
 #include <linux/module.h>
 
-int dc_enabled = 1;
-module_param(dc_enabled, int, 0644);
-
 static int interpolate(int x, int xa, int xb, int ya, int yb)
 {
 	int bf, factor, plus;
@@ -38,7 +35,7 @@ static int interpolate(int x, int xa, int xb, int ya, int yb)
 	return ya + factor + plus + sub;
 }
 
-static int brightness_to_alpha(uint8_t brightness)
+static int brightness_to_alpha(uint32_t brightness)
 {
 	int level = ARRAY_SIZE(brightness_alpha_lut);
 	int index, alpha;
@@ -62,7 +59,7 @@ static int brightness_to_alpha(uint8_t brightness)
 	return alpha;
 }
 
-static void set_dim_layer_exposure(uint8_t brightness, struct dsi_display *display)
+static void set_dim_layer_exposure(uint32_t brightness, struct dsi_display *display)
 {
 	struct drm_crtc *crtc;
 	struct drm_crtc_state *state;
@@ -89,19 +86,15 @@ static void set_dim_layer_exposure(uint8_t brightness, struct dsi_display *displ
 
 uint32_t expo_map_dim_level(uint32_t level, struct dsi_display *display)
 {
-	uint32_t override_level, brightness;
-	uint8_t dim_brightness;
+	uint32_t override_level;
 
-	if (level < DIM_THRES_LEVEL && dc_enabled) {
+	if (display->panel->lge.use_dc_dimming && level < DIM_THRES_LEVEL) {
 		override_level = DIM_THRES_LEVEL;
 	} else {
 		override_level = level;
 	}
 
-	brightness = level / BACKLIGHT_DIM_SCALE;
-	dim_brightness = brightness > U8_MAX ? U8_MAX : brightness;
-
-	set_dim_layer_exposure(dim_brightness, display);
+	set_dim_layer_exposure(level, display);
 
 	return override_level;
 }

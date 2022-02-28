@@ -56,10 +56,6 @@ extern int lge_get_mfts_mode(void);
 #endif /* CONFIG_LGE_COVER_DISPLAY */
 #endif
 
-#ifdef CONFIG_DRM_SDE_EXPO
-#include "sde_expo_dim_layer.h"
-#endif
-
 #define to_dsi_display(x) container_of(x, struct dsi_display, host)
 #define INT_BASE_10 10
 #define NO_OVERRIDE -1
@@ -104,10 +100,6 @@ extern int lge_update_backlight_cover(struct dsi_panel *panel);
 extern int dsi_display_set_backlight_cover(struct dsi_display *dsi_display, u32 bl_lvl);
 #endif /* CONFIG_LGE_COVER_DISPLAY */
 
-#endif
-
-#ifdef CONFIG_DRM_SDE_EXPO
-extern int dc_enabled;
 #endif
 
 static void dsi_display_mask_ctrl_error_interrupts(struct dsi_display *display,
@@ -280,12 +272,6 @@ int dsi_display_set_backlight(struct drm_connector *connector,
 		       dsi_display->name, rc);
 		goto error;
 	}
-
-#ifdef CONFIG_DRM_SDE_EXPO
-	if (dc_enabled) {
-		bl_temp = expo_map_dim_level((u32)bl_temp, dsi_display);
-	}
-#endif
 
 	rc = dsi_panel_set_backlight(panel, (u32)bl_temp);
 	if (rc)
@@ -5588,7 +5574,7 @@ static struct platform_driver dsi_display_driver = {
 static int dsi_display_init(struct dsi_display *display)
 {
 	int rc = 0;
-	 struct platform_device *pdev = display->pdev;
+	struct platform_device *pdev = display->pdev;
 
 	mutex_init(&display->display_lock);
 

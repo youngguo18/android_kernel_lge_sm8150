@@ -31,6 +31,10 @@ extern int lge_backlight_device_update_status(struct backlight_device *bd);
 extern bool is_ds2_connected(void);
 #endif
 
+#ifdef CONFIG_DRM_SDE_EXPO
+#include "sde_expo_dim_layer.h"
+#endif
+
 extern int lge_ddic_dsi_panel_tx_cmd_set(struct dsi_panel *panel,
 				enum lge_ddic_dsi_cmd_set_type type);
 extern char* get_payload_addr(struct dsi_panel *panel, enum lge_ddic_dsi_cmd_set_type type, int position);
@@ -288,6 +292,10 @@ int lge_backlight_device_update_status(struct backlight_device *bd)
 			bl_lvl = 1;
 	}
 
+#ifdef CONFIG_DRM_SDE_EXPO
+	bl_lvl = expo_map_dim_level((u32)bl_lvl, display);
+#endif
+
 	mutex_lock(&display->display_lock);
 	if (panel->lge.allow_bl_update) { //TODO : Discuss condition state.
 		panel->lge.bl_lvl_unset = -1;
@@ -452,6 +460,74 @@ static ssize_t irc_brighter_store(struct device *dev,
 	return ret;
 }
 static DEVICE_ATTR(irc_brighter, S_IRUGO | S_IWUSR | S_IWGRP, irc_brighter_show, irc_brighter_store);
+
+#ifdef CONFIG_DRM_SDE_EXPO
+static ssize_t dc_dimming_show(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	struct dsi_panel *panel;
+	int ret = 0;
+
+	panel = dev_get_drvdata(dev);
+	if (!panel) {
+		pr_err("panel is NULL\n");
+		return ret;
+	}
+
+	mutex_lock(&panel->panel_lock);
+	ret = panel->lge.use_dc_dimming;
+	mutex_unlock(&panel->panel_lock);
+
+	return sprintf(buf, "%d\n", ret);
+}
+
+static ssize_t dc_dimming_store(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t size)
+{
+	ssize_t ret = strnlen(buf, PAGE_SIZE);
+	struct dsi_panel *panel;
+	struct dsi_display *display;
+	int input;
+
+	panel = dev_get_drvdata(dev);
+	if (!panel) {
+		pr_err("panel is NULL\n");
+		return -EINVAL;
+	}
+
+	sscanf(buf, "%d", &input);
+	pr_info("input data %d\n", input);
+
+	mutex_lock(&panel->panel_lock);
+	if(!dsi_panel_initialized(panel)) {
+		pr_err("panel not yet initialized..\n");
+		mutex_unlock(&panel->panel_lock);
+		return -EINVAL;
+	}
+	mutex_unlock(&panel->panel_lock);
+
+	display = primary_display;
+
+	if (!display) {
+		pr_err("display is null\n");
+		return -EINVAL;
+	}
+
+	if (display->is_cont_splash_enabled) {
+		pr_err("cont_splash enabled\n");
+		return -EINVAL;
+	}
+
+	mutex_lock(&panel->panel_lock);
+	panel->lge.use_dc_dimming = input;
+	mutex_unlock(&panel->panel_lock);
+
+	lge_backlight_device_update_status(panel->bl_config.raw_bd);
+
+	return ret;
+}
+static DEVICE_ATTR(dc_dimming, S_IRUGO | S_IWUSR | S_IWGRP, dc_dimming_show, dc_dimming_store);
+#endif
 
 static ssize_t irc_support_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
@@ -879,6 +955,11 @@ int lge_brightness_create_sysfs(struct dsi_panel *panel,
 			if ((rc = device_create_file(brightness_sysfs_dev,
 							&dev_attr_br_offset)) < 0)
 				pr_err("add br_offset node fail!");
+#endif
+#if defined(CONFIG_DRM_SDE_EXPO)
+			if ((rc = device_create_file(brightness_sysfs_dev,
+							&dev_attr_dc_dimming)) < 0)
+				pr_err("add dc_dimming node fail!");
 #endif
 		}
 	}
