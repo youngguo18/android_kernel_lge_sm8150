@@ -884,15 +884,3 @@ config HIGHORDER_PAGES
 	  (Thus, reserve 10% of memory if set to 0)
 	  Please check ION memory usage in your system.
 	  And, set this size about minimum (ION + extra) some memory.
-
-config HSWAP
-	bool "Enable Hybrid SWAP"
-	depends on SWAP && ZRAM && PROCESS_RECLAIM
-	default n
-	help
-		This config supports multiple swap files which are based on different
-		block devices such as eMMC, UFS, or ZRAM.
-		kswapd use high priority swap file.
-		lowmemorykiller and direct reclaim module use low priority swap file.
-		lowmemorykiller reclaims pages of victim process instead kill the process.
-
