@@ -391,6 +391,10 @@ struct lge_dsi_panel {
 	bool use_cm_lut;
 	const char **cm_lut_name_list;
 	int cm_lut_cnt;
+
+#ifdef CONFIG_DRM_SDE_EXPO
+	bool use_dc_dimming;
+#endif
 };
 
 #endif //_H_LGE_DSI_PANEL_DEF_

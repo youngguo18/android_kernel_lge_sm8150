@@ -55,10 +55,6 @@
 #include "fbcn/lge_intm.h"
 #endif
 
-#ifdef CONFIG_DRM_SDE_EXPO
-extern int dc_enabled;
-#endif
-
 struct sde_crtc_custom_events {
 	u32 event;
 	int (*func)(struct drm_crtc *crtc, bool en,
@@ -2152,11 +2148,12 @@ static void _sde_crtc_blend_setup_mixer(struct drm_crtc *crtc,
 			_sde_crtc_setup_dim_layer_cfg(crtc, sde_crtc,
 					mixer, &cstate->dim_layer[i]);
 #ifdef CONFIG_DRM_SDE_EXPO
-		if (dc_enabled) {
+		if (test_bit(SDE_CRTC_DIRTY_DIM_LAYER_EXPO, cstate->dirty)) {
 			if (cstate->exposure_dim_layer) {
 				_sde_crtc_setup_dim_layer_cfg(crtc, sde_crtc,
 						mixer, cstate->exposure_dim_layer);
 			}
+			clear_bit(SDE_CRTC_DIRTY_DIM_LAYER_EXPO, cstate->dirty);
 		}
 #endif
 	}
@@ -3206,6 +3203,8 @@ static int sde_crtc_config_exposure_dim_layer(struct drm_crtc_state *crtc_state,
 	struct sde_crtc_state *cstate = to_sde_crtc_state(crtc_state);
 	struct drm_display_mode *mode = &crtc_state->adjusted_mode;
 	int alpha = sde_crtc_get_property(cstate, CRTC_PROP_DIM_LAYER_EXPO);
+	struct dsi_display *dsi_display = dsi_display_get_main_display();
+	struct dsi_panel *panel = dsi_display->panel;
 
 	kms = _sde_crtc_get_kms(crtc_state->crtc);
 	if (!kms || !kms->catalog) {
@@ -3217,6 +3216,10 @@ static int sde_crtc_config_exposure_dim_layer(struct drm_crtc_state *crtc_state,
 		return -EINVAL;
 	}
 
+	if (!panel->lge.use_dc_dimming || panel->lge.aod_power_mode || (int)panel->lge.ddic_ops->get_irc_state(panel) || !alpha) {
+		cstate->exposure_dim_layer = NULL;
+		return 0;
+	}
 
 	if ((stage + SDE_STAGE_0) >= kms->catalog->mixer[0].sblk->maxblendstages) {
 		return -EINVAL;
@@ -3233,7 +3236,7 @@ static int sde_crtc_config_exposure_dim_layer(struct drm_crtc_state *crtc_state,
 	dim_layer->color_fill = (struct sde_mdss_color) {0, 0, 0, alpha};
 	cstate->exposure_dim_layer = dim_layer;
 
-	dim_layer->flags = SDE_CRTC_DIRTY_DIM_LAYER_EXPO;
+	set_bit(SDE_CRTC_DIRTY_DIM_LAYER_EXPO, cstate->dirty);
 
 	return 0;
 }
@@ -4838,6 +4841,8 @@ static void sde_crtc_handle_power_event(u32 event_type, void *arg)
 		drm_atomic_crtc_for_each_plane(plane, crtc)
 			sde_plane_set_revalidate(plane, true);
 
+		set_bit(SDE_CRTC_DIRTY_DIM_LAYER_EXPO, cstate->dirty);
+
 		sde_cp_crtc_suspend(crtc);
 
 		/**
@@ -5552,11 +5557,9 @@ static int sde_crtc_atomic_check(struct drm_crtc *crtc,
 	}
 
 #ifdef CONFIG_DRM_SDE_EXPO
-	if (dc_enabled) {
-		rc = sde_crtc_exposure_atomic_check(cstate, pstates, cnt);
-		if (rc)
-			goto end;
-	}
+	rc = sde_crtc_exposure_atomic_check(cstate, pstates, cnt);
+	if (rc)
+		goto end;
 #endif
 
 	/* assign mixer stages based on sorted zpos property */
@@ -5789,10 +5792,8 @@ static void sde_crtc_install_properties(struct drm_crtc *crtc,
 		"output_fence", 0x0, 0, ~0, 0, CRTC_PROP_OUTPUT_FENCE);
 
 #ifdef CONFIG_DRM_SDE_EXPO
-	if (dc_enabled) {
-        msm_property_install_volatile_range(&sde_crtc->property_info,
-                        "dim_layer_exposure", 0x0, 0, ~0, 0, CRTC_PROP_DIM_LAYER_EXPO);
-	}
+	msm_property_install_volatile_range(&sde_crtc->property_info,
+					"dim_layer_exposure", 0x0, 0, ~0, 0, CRTC_PROP_DIM_LAYER_EXPO);
 #endif
 
 	msm_property_install_range(&sde_crtc->property_info,
