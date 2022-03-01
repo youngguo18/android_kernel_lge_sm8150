@@ -4840,9 +4840,9 @@ static void sde_crtc_handle_power_event(u32 event_type, void *arg)
 		 */
 		drm_atomic_crtc_for_each_plane(plane, crtc)
 			sde_plane_set_revalidate(plane, true);
-
+#ifdef CONFIG_DRM_SDE_EXPO
 		set_bit(SDE_CRTC_DIRTY_DIM_LAYER_EXPO, cstate->dirty);
-
+#endif
 		sde_cp_crtc_suspend(crtc);
 
 		/**
