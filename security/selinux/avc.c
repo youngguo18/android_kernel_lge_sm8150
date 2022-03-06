@@ -367,7 +367,11 @@ static struct avc_xperms_decision_node
 	struct extended_perms_decision *xpd;
 
 	xpd_node = kmem_cache_zalloc(avc_xperms_decision_cachep,
+<<<<<<< HEAD
 			GFP_NOWAIT | __GFP_NOWARN);
+=======
+				     GFP_NOWAIT | __GFP_NOWARN);
+>>>>>>> e853993d29aa42ac4b3c2912db975a0a66d7a5b0
 	if (!xpd_node)
 		return NULL;
 
@@ -414,8 +418,12 @@ static struct avc_xperms_node *avc_xperms_alloc(void)
 {
 	struct avc_xperms_node *xp_node;
 
+<<<<<<< HEAD
 	xp_node = kmem_cache_zalloc(avc_xperms_cachep,
 			GFP_NOWAIT | __GFP_NOWARN);
+=======
+	xp_node = kmem_cache_zalloc(avc_xperms_cachep, GFP_NOWAIT | __GFP_NOWARN);
+>>>>>>> e853993d29aa42ac4b3c2912db975a0a66d7a5b0
 	if (!xp_node)
 		return xp_node;
 	INIT_LIST_HEAD(&xp_node->xpd_head);

@@ -166,8 +166,12 @@ struct gadget_config_name {
 	struct list_head list;
 };
 
+<<<<<<< HEAD
 #define MAX_USB_STRING_LEN	126
 #define MAX_USB_STRING_WITH_NULL_LEN	(MAX_USB_STRING_LEN+1)
+=======
+#define USB_MAX_STRING_WITH_NULL_LEN	(USB_MAX_STRING_LEN+1)
+>>>>>>> e853993d29aa42ac4b3c2912db975a0a66d7a5b0
 
 static int usb_string_copy(const char *s, char **s_copy)
 {
@@ -175,17 +179,29 @@ static int usb_string_copy(const char *s, char **s_copy)
 	char *str;
 	char *copy = *s_copy;
 	ret = strlen(s);
+<<<<<<< HEAD
 	if (ret > MAX_USB_STRING_LEN)
+=======
+	if (ret > USB_MAX_STRING_LEN)
+>>>>>>> e853993d29aa42ac4b3c2912db975a0a66d7a5b0
 		return -EOVERFLOW;
 
 	if (copy) {
 		str = copy;
 	} else {
+<<<<<<< HEAD
 		str = kmalloc(MAX_USB_STRING_WITH_NULL_LEN, GFP_KERNEL);
 		if (!str)
 			return -ENOMEM;
 	}
 	strlcpy(str, s, MAX_USB_STRING_WITH_NULL_LEN);
+=======
+		str = kmalloc(USB_MAX_STRING_WITH_NULL_LEN, GFP_KERNEL);
+		if (!str)
+			return -ENOMEM;
+	}
+	strcpy(str, s);
+>>>>>>> e853993d29aa42ac4b3c2912db975a0a66d7a5b0
 	if (str[ret - 1] == '\n')
 		str[ret - 1] = '\0';
 	*s_copy = str;
@@ -329,9 +345,16 @@ static ssize_t gadget_dev_desc_bcdUSB_store(struct config_item *item,
 
 static ssize_t gadget_dev_desc_UDC_show(struct config_item *item, char *page)
 {
-	char *udc_name = to_gadget_info(item)->composite.gadget_driver.udc_name;
+	struct gadget_info *gi = to_gadget_info(item);
+	char *udc_name;
+	int ret;
 
-	return sprintf(page, "%s\n", udc_name ?: "");
+	mutex_lock(&gi->lock);
+	udc_name = gi->composite.gadget_driver.udc_name;
+	ret = sprintf(page, "%s\n", udc_name ?: "");
+	mutex_unlock(&gi->lock);
+
+	return ret;
 }
 
 static int unregister_gadget(struct gadget_info *gi)
@@ -2051,7 +2074,7 @@ static struct config_group *gadgets_make(
 	gi->composite.unbind = configfs_do_nothing;
 	gi->composite.suspend = NULL;
 	gi->composite.resume = NULL;
-	gi->composite.max_speed = USB_SPEED_SUPER;
+	gi->composite.max_speed = USB_SPEED_SUPER_PLUS;
 
 	spin_lock_init(&gi->spinlock);
 	mutex_init(&gi->lock);

@@ -662,6 +662,7 @@ int tmc_read_unprepare_etb(struct tmc_drvdata *drvdata)
 
 	spin_lock_irqsave(&drvdata->spinlock, flags);
 
+<<<<<<< HEAD
 	if (drvdata->enable) {
 		/* There is no point in reading a TMC in HW FIFO mode */
 		mode = readl_relaxed(drvdata->base + TMC_MODE);
@@ -671,8 +672,16 @@ int tmc_read_unprepare_etb(struct tmc_drvdata *drvdata)
 		}
 	}
 
+=======
+>>>>>>> e853993d29aa42ac4b3c2912db975a0a66d7a5b0
 	/* Re-enable the TMC if need be */
 	if (drvdata->mode == CS_MODE_SYSFS) {
+		/* There is no point in reading a TMC in HW FIFO mode */
+		mode = readl_relaxed(drvdata->base + TMC_MODE);
+		if (mode != TMC_MODE_CIRCULAR_BUFFER) {
+			spin_unlock_irqrestore(&drvdata->spinlock, flags);
+			return -EINVAL;
+		}
 		/*
 		 * The trace run will continue with the same allocated trace
 		 * buffer. As such zero-out the buffer so that we don't end

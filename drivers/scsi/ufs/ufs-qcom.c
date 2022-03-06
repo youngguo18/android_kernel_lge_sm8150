@@ -2585,11 +2585,16 @@ int ufs_qcom_testbus_config(struct ufs_qcom_host *host)
 		goto out;
 	}
 	mask <<= offset;
+<<<<<<< HEAD
 
 	spin_unlock_irqrestore(hba->host->host_lock, flags);
 	if (reg) {
 		ufshcd_rmwl(host->hba, TEST_BUS_SEL,
 		    (u32)host->testbus.select_major << testbus_sel_offset,
+=======
+	ufshcd_rmwl(host->hba, TEST_BUS_SEL,
+		    (u32)host->testbus.select_major << 19,
+>>>>>>> e853993d29aa42ac4b3c2912db975a0a66d7a5b0
 		    REG_UFS_CFG1);
 		ufshcd_rmwl(host->hba, mask,
 		    (u32)host->testbus.select_minor << offset,
@@ -2605,8 +2610,13 @@ int ufs_qcom_testbus_config(struct ufs_qcom_host *host)
 	 * committed before returning.
 	 */
 	mb();
+<<<<<<< HEAD
 out:
 	return ret;
+=======
+
+	return 0;
+>>>>>>> e853993d29aa42ac4b3c2912db975a0a66d7a5b0
 }
 
 static void ufs_qcom_testbus_read(struct ufs_hba *hba)
