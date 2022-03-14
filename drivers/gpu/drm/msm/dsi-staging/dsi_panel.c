@@ -34,21 +34,10 @@
 #include "../lge/factory/lge_factory.h"
 
 extern int lge_get_mfts_mode(void);
-#include <linux/pm_wakeup.h>
-#include <linux/project_info.h>
-#include <linux/msm_drm_notify.h>
-#include <linux/notifier.h>
-#include <linux/string.h>
-#include <linux/input.h>
-#include <linux/proc_fs.h>
-#include "dsi_drm.h"
-#include "dsi_display.h"
-#include "sde_crtc.h"
-#include "sde_rm.h"
-#include "sde_trace.h"
 
 #ifdef CONFIG_KLAPSE
 #include <linux/klapse.h>
+#endif
 #endif
 
 /**
@@ -669,41 +658,10 @@ static int dsi_panel_update_backlight(struct dsi_panel *panel,
 	}
 
 	dsi = &panel->mipi_device;
-	mode = panel->cur_mode;
 
-	saved_backlight = bl_lvl;
-
-	/*xiaoxiaohuan@OnePlus.MultiMediaService,2018/08/04, add for fingerprint*/
-	if (panel->is_hbm_enabled) {
-		hbm_finger_print = true;
-		pr_err("HBM is enabled\n");
-		return 0;
-	}
-	
 #ifdef CONFIG_KLAPSE
 	set_rgb_slider(bl_lvl);
 #endif
-
-	/*** DC backlight config ****/
-	if (op_dimlayer_bl_enabled != op_dimlayer_bl_enable_real) {
-		op_dimlayer_bl_enable_real = op_dimlayer_bl_enabled;
-		if (op_dimlayer_bl_enable_real && bl_lvl != 0)
-			bl_lvl = op_dimlayer_bl_alpha;
-		pr_err("dc light %d %d\n", op_dimlayer_bl_enable_real, bl_lvl);
-	}
-	if (op_dimlayer_bl_enable_real && bl_lvl != 0)
-		bl_lvl = op_dimlayer_bl_alpha;
-
-	if (panel->bl_config.bl_high2bit) {
-		if (HBM_flag == true)
-			return 0;
-
-		if (cur_backlight == bl_lvl && (mode_fps != cur_fps ||
-				 cur_h != panel->cur_mode->timing.h_active) && !hbm_finger_print) {
-			cur_fps = mode_fps;
-			cur_h = panel->cur_mode->timing.h_active;
-			return 0;
-		}
 
 	if (panel->bl_config.bl_inverted_dbv)
 		bl_lvl = (((bl_lvl & 0xff) << 8) | (bl_lvl >> 8));
