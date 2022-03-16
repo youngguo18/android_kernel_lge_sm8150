@@ -86,6 +86,18 @@ int suid_dumpable = 0;
 static LIST_HEAD(formats);
 static DEFINE_RWLOCK(binfmt_lock);
 
+#define HWCOMPOSER_BIN_PREFIX "/vendor/bin/hw/android.hardware.graphics.composer"
+#define SURFACEFLINGER_BIN_PREFIX "/system/bin/surfaceflinger"
+#define ZYGOTE32_BIN "/system/bin/app_process32"
+#define ZYGOTE64_BIN "/system/bin/app_process64"
+static struct signal_struct *zygote32_sig;
+static struct signal_struct *zygote64_sig;
+
+bool task_is_zygote(struct task_struct *p)
+{
+	return p->signal == zygote32_sig || p->signal == zygote64_sig;
+}
+
 void __register_binfmt(struct linux_binfmt * fmt, int insert)
 {
 	BUG_ON(!fmt);
@@ -308,7 +320,7 @@ static int __bprm_mm_init(struct linux_binprm *bprm)
 	struct vm_area_struct *vma = NULL;
 	struct mm_struct *mm = bprm->mm;
 
-	bprm->vma = vma = kmem_cache_zalloc(vm_area_cachep, GFP_KERNEL);
+	bprm->vma = vma = vm_area_alloc();
 	if (!vma)
 		return -ENOMEM;
 
@@ -344,7 +356,7 @@ err:
 	up_write(&mm->mmap_sem);
 err_free:
 	bprm->vma = NULL;
-	kmem_cache_free(vm_area_cachep, vma);
+	vm_area_free(vma);
 	return err;
 }
 
@@ -1843,6 +1855,24 @@ static int do_execveat_common(int fd, struct filename *filename,
 	retval = exec_binprm(bprm);
 	if (retval < 0)
 		goto out;
+
+	if (is_global_init(current->parent)) {
+		if (unlikely(!strcmp(filename->name, ZYGOTE32_BIN)))
+			zygote32_sig = current->signal;
+		else if (unlikely(!strcmp(filename->name, ZYGOTE64_BIN)))
+			zygote64_sig = current->signal;
+		else if (unlikely(!strncmp(filename->name,
+					   HWCOMPOSER_BIN_PREFIX,
+					   strlen(HWCOMPOSER_BIN_PREFIX)))) {
+			current->pc_flags |= PC_PERF_AFFINE;
+			set_cpus_allowed_ptr(current, cpu_perf_mask);
+		} else if (unlikely(!strncmp(filename->name,
+						SURFACEFLINGER_BIN_PREFIX,
+						strlen(SURFACEFLINGER_BIN_PREFIX)))) {
+							current->pc_flags |= PC_PRIME_AFFINE;
+							set_cpus_allowed_ptr(current, cpu_prime_mask);
+						}
+	}
 
 	/* execve succeeded */
 	current->fs->in_exec = 0;
