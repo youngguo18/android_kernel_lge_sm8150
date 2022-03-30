@@ -7350,8 +7350,14 @@ int smblib_set_prop_pr_swap_in_progress(struct smb_charger *chg,
 		}
 
 		/* enable DRP */
+#ifdef CONFIG_LGE_USB
+		rc = smblib_masked_write(chg, TYPE_C_MODE_CFG_REG,
+				 TYPEC_POWER_ROLE_CMD_MASK | TYPEC_TRY_MODE_MASK,
+				 EN_TRY_SNK_BIT);
+#else
 		rc = smblib_masked_write(chg, TYPE_C_MODE_CFG_REG,
 				 TYPEC_POWER_ROLE_CMD_MASK, 0);
+#endif
 		if (rc < 0) {
 			smblib_err(chg, "Couldn't enable DRP rc=%d\n", rc);
 			return rc;

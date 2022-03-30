@@ -956,6 +956,12 @@ static int ecryptfs_setattr(struct dentry *dentry, struct iattr *ia)
 	}
 	mutex_unlock(&crypt_stat->cs_mutex);
 
+#ifdef FEATURE_SDCARD_ENCRYPTION
+	/* Allow touch updating timestamps. This is needed from ROS as ROS
+	 * adopt fuse and there is EPERM error without this code.
+	 */
+	ia->ia_valid |= ATTR_FORCE;
+#endif
 	rc = setattr_prepare(dentry, ia);
 	if (rc)
 		goto out;
