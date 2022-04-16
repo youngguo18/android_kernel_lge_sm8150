@@ -625,6 +625,7 @@ static ssize_t kgsl_pwrctrl_thermal_pwrlevel_store(struct device *dev,
 	int ret;
 	unsigned int level = 0;
 
+	return count;
 	if (device == NULL)
 		return 0;
 
