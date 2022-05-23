@@ -760,7 +760,7 @@ void touch_send_uevent(struct touch_core_data *ts, int type)
 	} else {
 		TOUCH_I("%s  is not sent\n", uevent_str[type][0]);
 	}
-	if (type == TOUCH_UEVENT_KNOCK) {
+	if (type == LPWG_DOUBLE_TAP) {
 		input_report_key(ts->input, KEY_WAKEUP, 1);
 		TOUCH_I("Simulate power button depress");
 		input_sync(ts->input);
