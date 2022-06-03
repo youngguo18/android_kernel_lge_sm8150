@@ -236,3 +236,11 @@ config DSI_FEATURES
 	help
 	  If features can't be enabled in the display drivers in arch/
 	  use this switch to force the use of ULPS and PHY poweroff.
+	
+config KLAPSE
+    bool CONFIG_KLAPSE
+    depends on DRM_MSM
+    default n
+    help
+        A simple rgb dynamic lapsing module similar to LineageOS' livedisplay
+
