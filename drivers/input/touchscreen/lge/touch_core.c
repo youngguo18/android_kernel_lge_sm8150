@@ -128,6 +128,7 @@ static void touch_report_event(struct touch_core_data *ts)
 					ts->tdata[i].width_minor);
 			input_report_abs(ts->input, ABS_MT_ORIENTATION,
 					ts->tdata[i].orientation);
+
 			if (press_mask & (1 << i)) {
 				if (hide_lockscreen_coord) {
 					TOUCH_I("%d finger pressed:<%d>(xxxx,xxxx,xxxx)\n",
